@@ -1,0 +1,14 @@
+{
+  "short_name": "Youtube MP3",
+  "name": "Simple Go Youtube MP3 Downloader",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/?utm_source=homescreen",
+  "display": "standalone"
+
+}
