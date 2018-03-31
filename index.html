@@ -140,7 +140,7 @@
               resolve(xhr);
             };
             xhr.onerror = reject;
-            xhr.open("GET", "http://microsoft.gotdns.ch:3000/" + url);
+            xhr.open("GET", "http://localhost:3000/" + url);
             xhr.send();
           }).then(function(xhr) {
             var a = document.createElement("a");
