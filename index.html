@@ -1,0 +1,164 @@
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <script src='https://apis.google.com/js/api.js'></script>
+      <script src="https://apis.google.com/js/client.js"></script>
+      <meta name="theme-color" content="#7b1fa2"/>
+      <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+      <link rel="manifest" href="manifest.json">
+      <title>Youtube MP3 Downloader</title>
+    </head>
+    <body> 
+        <nav> <!--Navbar -->
+          <div class="nav-wrapper purple darken-3">
+            <a href="#" class="brand-logo center">MP3</a>
+          </div>
+        </nav>
+        <br>
+          <div class="row"> <!--Card (where you put the URL) -->
+            <div class="col s12">
+                <ul class="collapsible">
+                    <li>
+                      <div class="collapsible-header"><i class="material-icons">code</i>Download By URL</div>
+                      <div class="collapsible-body">
+                        <p>You can download multiple URLs by dividing them with a newline.</p>
+                          <form>
+                            <div class="row">
+                              <div class="input-field">
+                                <textarea id="downl" class="materialize-textarea"></textarea>
+                                <label for="downl">URLs</label>
+                              </div>
+                            </div>
+                          </form>
+                        <a href="#" onclick="Download()">Download</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="collapsible-header"><i class="material-icons">search</i>Search on Youtube</div>
+                      <div class="collapsible-body">
+                        <p>Write the title of the Video you want to download</p>
+                          <form>
+                            <div class="row">
+                              <div class="input-field">
+                                <textarea id="txtSearch" class="materialize-textarea"></textarea>
+                                <label for="downl">Title</label>
+                              </div>
+                            </div>
+                          </form>
+                        <a href="#" onclick="SearchDL()">Serach & Download</a>
+                    </div>
+                    </li>
+                </ul>
+            </div>
+          </div>
+          <div class="row"> <!--Queue Card -->
+            <div class="col s12">
+              <div class="card blue-grey darken-1">
+                <div id="queue" class="card-content white-text">
+                  <span class="card-title">Download Queue</span>
+                  <p>Here you can see all your queued downloads.</p>
+                  <br>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="page-footer purple darken-3"> <!--Footer -->
+          <div class="container">
+            <div class="row">
+              <div class="col l6 s12">
+                <h5 class="white-text">Simple Go Youtube Downloader</h5>
+                <p class="grey-text text-lighten-4">By Nicola Guerrera</p>
+              </div>
+              <div class="col l6 s12">
+               <h5 class="white-text">Links</h5>
+                <ul>
+                  <li><a class="grey-text text-lighten-3" href="https://github.com/nik012003">My GitHub</a></li>
+                  <li><a class="grey-text text-lighten-3" href="https://github.com/nik012003/Youtube-MP3-Go/">Fork this Project</a></li>
+                </ul>
+              </div>
+            </div>
+            </div>
+          <div class="footer-copyright">
+            <div class="container">
+              Thanks for using my Downloader
+            <a class="grey-text text-lighten-4 right" href="#!">Enjoy!</a>
+            </div>
+          </div>
+        </footer>
+      <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+      <script>
+        var apiKey = "AIzaSyC88jC-2idEYT_qvAOBTBzkp5LU8cvZeKw"; // See http://goo.gl/PdPA1 to get a key for your own applications.
+        async function SearchDL(title) {
+            var searchTerms = $('#txtSearch').val().split("\n");
+            for (z = 0; z < searchTerms.length; z++) {
+            console.log(z);
+            searchTerm = searchTerms[z];
+            Search(searchTerm);
+            }   
+            $("#txtSearch").val("");
+        }
+        async function Search(title) {
+            gapi.client.init({
+                'apiKey': apiKey, 
+                'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest']
+              }).then(function() {
+                return gapi.client.youtube.search.list({
+                  q: title,
+                  part: 'snippet'
+                });
+              }).then(function(response) {
+                var searchResult = response.result;
+                saveFile(searchResult.items[0].id.videoId);
+              });
+        }
+      
+          
+      async function Download()
+        {
+            urls = $("#downl").val().split("\n");
+            for (i = 0; i < urls.length; i++) { 
+                console.log("Downloading:" + youtube_parser(urls[i]));
+                saveFile(youtube_parser(urls[i]));
+              }
+            $("#downl").val("");
+        }
+        function saveFile(url) {
+          return new Promise(function(resolve, reject) {
+            var chip = document.createElement("div");
+            chip.classList = "chip";
+            chip.id = url;
+            chip.innerText = url;
+            document.getElementById("queue").appendChild(chip);
+            // Get file name from url.
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'blob';
+            xhr.onload = function() {
+              resolve(xhr);
+            };
+            xhr.onerror = reject;
+            xhr.open("GET", "http://microsoft.gotdns.ch:3000/" + url);
+            xhr.send();
+          }).then(function(xhr) {
+            var a = document.createElement("a");
+            a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+            console.log(xhr)
+            a.download = xhr.getResponseHeader("Content-Disposition").split("filename=")[1]; // Set the file name.
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.getElementById("queue").removeChild(document.getElementById(url));
+            return xhr;
+          });
+        } //Answer from https://stackoverflow.com/questions/22733685/how-to-download-files-using-javascript-asynchronously
+        function youtube_parser(url){
+            var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+            var match = url.match(regExp);
+            return (match&&match[7].length==11)? match[7] : false;
+        }//Answer from https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+      </script>
+    </body>
+  </html>
